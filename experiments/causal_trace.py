@@ -485,19 +485,31 @@ class ModelAndTokenizer:
 
 
 def layername(model, num, kind=None):
-    if hasattr(model, "transformer"):
-        if kind == "embed":
-            return "transformer.wte"
-        return f'transformer.h.{num}{"" if kind is None else "." + kind}'
-    if hasattr(model, "gpt_neox"):
-        if kind == "embed":
-            return "gpt_neox.embed_in"
-        if kind == "attn":
-            kind = "attention"
-        return f'gpt_neox.layers.{num}{"" if kind is None else "." + kind}'
-    assert False, "unknown transformer structure"
+    if 'llama' in model.name_or_path.lower():
+        if hasattr(model, "model"):
+            if kind == "embed":
+                return "model.embed_tokens"
+            if kind == "attn":
+                kind = "self_attn"
+            return f'model.layers.{num}{"" if kind is None else "." + kind}'
+        assert False, "unknown transformer structure"
+    elif 'gpt' in model.name_or_path.lower():
+        if hasattr(model, "transformer"):
+            if kind == "embed":
+                return "transformer.wte"
+            return f'transformer.h.{num}{"" if kind is None else "." + kind}'
+        if hasattr(model, "gpt_neox"):
+            if kind == "embed":
+                return "gpt_neox.embed_in"
+            if kind == "attn":
+                kind = "attention"
+            return f'gpt_neox.layers.{num}{"" if kind is None else "." + kind}'
+        assert False, "unknown transformer structure"
+    else:
+        assert False, "unknown transformer model"
 
 
+    
 def guess_subject(prompt):
     return re.search(r"(?!Wh(o|at|ere|en|ich|y) )([A-Z]\S*)(\s[A-Z][a-z']*)*", prompt)[
         0
@@ -544,7 +556,7 @@ def plot_trace_heatmap(result, savepdf=None, title=None, xlabel=None, modelname=
     for i in range(*result["subject_range"]):
         labels[i] = labels[i] + "*"
 
-    with plt.rc_context(rc={"font.family": "Times New Roman"}):
+    with plt.rc_context():
         fig, ax = plt.subplots(figsize=(3.5, 2), dpi=200)
         h = ax.pcolor(
             differences,

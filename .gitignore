@@ -162,3 +162,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+gpt2_finetuned/model-00001-of-00002.safetensors
+gpt2_finetuned/model-00002-of-00002.safetensors
+finetuned_gpt2/model.safetensors
