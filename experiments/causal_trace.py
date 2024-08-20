@@ -640,12 +640,50 @@ def find_token_range(tokenizer, token_array, substring):
     return (tok_start, tok_end)
 
 
+def generate_text(mt, prompts, max_length=50, return_p=False):
+    # Tokenize the input prompts
+    inp = make_inputs(mt.tokenizer, prompts)
+    
+    # Generate the output sequence using the model
+    generated_outputs = mt.model.generate(input_ids=inp['input_ids'], max_length=max_length)
+    
+    # Decode the generated tokens to text
+    result = [mt.tokenizer.decode(output, skip_special_tokens=True) for output in generated_outputs]
+    
+    if return_p:
+        # If probabilities are needed, you need to handle this separately
+        # Here we assume 'predict_from_input' can return such probabilities
+        preds, p = predict_from_input(mt.model, inp)
+        p_result = [mt.tokenizer.decode(c) for c in preds]
+        result = (result, p_result)
+    
+    return result
+
 def predict_token(mt, prompts, return_p=False):
     inp = make_inputs(mt.tokenizer, prompts)
     preds, p = predict_from_input(mt.model, inp)
     result = [mt.tokenizer.decode(c) for c in preds]
     if return_p:
         result = (result, p)
+    return result
+
+def generate_text(mt, prompts, max_length=50, return_p=False):
+    # Tokenize the input prompts
+    inp = make_inputs(mt.tokenizer, prompts)
+    
+    # Generate the output sequence using the model
+    generated_outputs = mt.model.generate(input_ids=inp['input_ids'], max_length=max_length)
+    
+    # Decode the generated tokens to text
+    result = [mt.tokenizer.decode(output, skip_special_tokens=True) for output in generated_outputs]
+    
+    if return_p:
+        # If probabilities are needed, you need to handle this separately
+        # Here we assume 'predict_from_input' can return such probabilities
+        preds, p = predict_from_input(mt.model, inp)
+        p_result = [mt.tokenizer.decode(c) for c in preds]
+        result = (result, p_result)
+    
     return result
 
 
